@@ -26,8 +26,8 @@ Invoke-RepositoryTest 'skill frontmatter is discoverable' {
     $skillPath = Join-Path $repositoryRoot 'unlimitds-setup\SKILL.md'
     Assert-RepositoryCondition (Test-Path $skillPath) 'SKILL.md is missing'
     $skill = Get-Content -LiteralPath $skillPath -Raw
-    Assert-RepositoryCondition ($skill -match '(?m)^name: unlimitds-setup$') 'Skill name is incorrect'
-    Assert-RepositoryCondition ($skill -match '(?m)^description: Use when .+$') 'Description must start with Use when'
+    Assert-RepositoryCondition ($skill -match '(?m)^name: unlimitds-setup\r?$') 'Skill name is incorrect'
+    Assert-RepositoryCondition ($skill -match '(?m)^description: Use when .+\r?$') 'Description must start with Use when'
 }
 
 Invoke-RepositoryTest 'skill limits novice interaction to key and mode' {
@@ -52,9 +52,9 @@ Invoke-RepositoryTest 'Codex skill metadata is present' {
     $metadataPath = Join-Path $repositoryRoot 'unlimitds-setup\agents\openai.yaml'
     Assert-RepositoryCondition (Test-Path $metadataPath) 'agents/openai.yaml is missing'
     $metadata = Get-Content -LiteralPath $metadataPath -Raw
-    Assert-RepositoryCondition ($metadata -match '(?m)^\s*display_name:\s*".+"$') 'Display name is missing'
-    Assert-RepositoryCondition ($metadata -match '(?m)^\s*short_description:\s*".+"$') 'Short description is missing'
-    Assert-RepositoryCondition ($metadata -match '(?m)^\s*default_prompt:\s*".*\$unlimitds-setup.*"$') 'Default prompt must invoke the skill'
+    Assert-RepositoryCondition ($metadata -match '(?m)^\s*display_name:\s*".+"\r?$') 'Display name is missing'
+    Assert-RepositoryCondition ($metadata -match '(?m)^\s*short_description:\s*".+"\r?$') 'Short description is missing'
+    Assert-RepositoryCondition ($metadata -match '(?m)^\s*default_prompt:\s*".*\$unlimitds-setup.*"\r?$') 'Default prompt must invoke the skill'
 }
 
 Invoke-RepositoryTest 'novice README provides one-copy installation' {
