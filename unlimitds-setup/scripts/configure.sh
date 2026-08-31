@@ -71,7 +71,8 @@ fi
 
 clients=()
 if $test_mode && [[ -n "${UNLIMITDS_SETUP_CLIENTS:-}" ]]; then
-  case "${UNLIMITDS_SETUP_CLIENTS,,}" in
+  client_override="$(printf '%s' "$UNLIMITDS_SETUP_CLIENTS" | tr '[:upper:]' '[:lower:]')"
+  case "$client_override" in
     both) clients=('codex' 'claude') ;;
     codex) clients=('codex') ;;
     claude) clients=('claude') ;;

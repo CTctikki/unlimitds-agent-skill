@@ -54,7 +54,8 @@ function Invoke-Setup {
         [string]$HomePath,
         [string]$Mode,
         [string]$ApiKey = $testKey,
-        [string]$Clients = 'both'
+        [string]$Clients = 'both',
+        [string]$Engine = 'pwsh'
     )
 
     $saved = @{}
@@ -71,7 +72,12 @@ function Invoke-Setup {
     }
 
     try {
-        $output = & pwsh -NoProfile -File $scriptPath -Mode $Mode 2>&1 | Out-String
+        $arguments = @('-NoProfile')
+        if ([System.IO.Path]::GetFileName($Engine) -like 'powershell*') {
+            $arguments += @('-ExecutionPolicy', 'Bypass')
+        }
+        $arguments += @('-File', $scriptPath, '-Mode', $Mode)
+        $output = & $Engine @arguments 2>&1 | Out-String
         return [pscustomobject]@{ ExitCode = $LASTEXITCODE; Output = $output.Trim() }
     }
     finally {
@@ -160,6 +166,24 @@ Invoke-Test 'invalid key stops before mutation' {
         Assert-Equal (Get-Content -LiteralPath $configPath -Raw) $before 'Configuration changed after invalid key'
         Assert-True (-not (Test-Path (Join-Path $homePath '.unlimitds\test-user-env.json'))) 'Environment changed after invalid key'
         Assert-True (-not $result.Output.Contains('bad-key')) 'Error output leaked the malformed key'
+    }
+    finally {
+        Remove-Item -LiteralPath $homePath -Recurse -Force
+    }
+}
+
+Invoke-Test 'Windows PowerShell 5 can run the setup script' {
+    $windowsPowerShell = Get-Command powershell.exe -ErrorAction SilentlyContinue
+    if (-not $windowsPowerShell) {
+        Write-Host 'SKIP powershell.exe is unavailable'
+        return
+    }
+    $homePath = New-TestHome -WithConfig
+    try {
+        $result = Invoke-Setup -HomePath $homePath -Mode standard -Engine $windowsPowerShell.Source
+        Assert-Equal $result.ExitCode 0 $result.Output
+        $content = Get-Content -LiteralPath (Join-Path $homePath '.codex\config.toml') -Raw
+        Assert-True $content.Contains('model = "deepseek-v4-pro"') 'Windows PowerShell did not write the model'
     }
     finally {
         Remove-Item -LiteralPath $homePath -Recurse -Force

@@ -8,7 +8,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Get-PlainTextSecret {
-    $secureValue = Read-Host '请输入 UnlimitDS API Key' -AsSecureString
+    $secureValue = Read-Host 'Enter your UnlimitDS API Key' -AsSecureString
     $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureValue)
     try {
         return [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
@@ -16,6 +16,12 @@ function Get-PlainTextSecret {
     finally {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($pointer)
     }
+}
+
+function Write-Utf8File {
+    param([string]$Path, [string]$Content)
+    $encoding = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($Path, $Content, $encoding)
 }
 
 function Test-CommandAvailable {
@@ -40,9 +46,9 @@ function Test-ApiKey {
             $statusCode = [int]$_.Exception.Response.StatusCode
         }
         switch ($statusCode) {
-            401 { throw 'API Key 无效或已失效（HTTP 401）。' }
-            429 { throw '账户额度已用完或受到频率限制（HTTP 429）。' }
-            default { throw '无法连接 UnlimitDS API，请检查网络后重试。' }
+            401 { throw 'The API key is invalid or expired (HTTP 401).' }
+            429 { throw 'The account quota or rate limit was reached (HTTP 429).' }
+            default { throw 'Unable to reach the UnlimitDS API. Check the network and try again.' }
         }
     }
 }
@@ -56,7 +62,7 @@ function Get-ConfiguredClients {
             'codex' { return @('codex') }
             'claude' { return @('claude') }
             'none' { return @() }
-            default { throw '测试客户端覆盖值无效。' }
+            default { throw 'The test client override is invalid.' }
         }
     }
 
@@ -133,7 +139,7 @@ function Update-CodexConfig {
 
     $temporaryPath = "$configPath.tmp-$([guid]::NewGuid().ToString('N'))"
     try {
-        ($output -join "`n") + "`n" | Set-Content -LiteralPath $temporaryPath -Encoding utf8NoBOM -NoNewline
+        Write-Utf8File -Path $temporaryPath -Content (($output -join "`n") + "`n")
         Move-Item -LiteralPath $temporaryPath -Destination $configPath -Force
     }
     finally {
@@ -158,7 +164,7 @@ function Set-PersistedVariables {
     if ($TestMode) {
         $stateDirectory = Join-Path $HomePath '.unlimitds'
         New-Item -ItemType Directory -Path $stateDirectory -Force | Out-Null
-        $Variables | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $stateDirectory 'test-user-env.json') -Encoding utf8NoBOM
+        Write-Utf8File -Path (Join-Path $stateDirectory 'test-user-env.json') -Content ($Variables | ConvertTo-Json)
         return
     }
 
@@ -178,7 +184,7 @@ try {
 
     $apiKey = if ($env:UNLIMITDS_API_KEY_INPUT) { $env:UNLIMITDS_API_KEY_INPUT.Trim() } else { Get-PlainTextSecret }
     if ($apiKey -notmatch '^uds_[A-Za-z0-9_-]{20,}$') {
-        throw 'API Key 格式不正确，应以 uds_ 开头。'
+        throw 'The API key format is invalid; it must start with uds_.'
     }
 
     $model = if ($Mode -eq 'jailbreak') { 'deepseek-v4-pro_jailbreak' } else { 'deepseek-v4-pro' }
@@ -186,7 +192,7 @@ try {
     $apiCheck = Test-ApiKey -ApiKey $apiKey -SkipCheck $skipApiCheck
     $clients = @(Get-ConfiguredClients -HomePath $homePath -TestMode $testMode)
     if ($clients.Count -eq 0) {
-        throw '未检测到 Codex CLI 或 Claude Code，请先安装至少一个客户端。'
+        throw 'Neither Codex CLI nor Claude Code was detected. Install at least one client first.'
     }
 
     $backupPaths = [System.Collections.Generic.List[string]]::new()
@@ -216,6 +222,6 @@ try {
     } | ConvertTo-Json -Compress
 }
 catch {
-    [Console]::Error.WriteLine("UnlimitDS 配置失败：$($_.Exception.Message)")
+    [Console]::Error.WriteLine("UnlimitDS setup failed: $($_.Exception.Message)")
     exit 1
 }

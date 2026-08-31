@@ -134,9 +134,19 @@ test_invalid_input() {
   rm -rf -- "$home_path"
 }
 
+test_bash_32_compatibility() {
+  local name='script avoids Bash 4-only lowercase expansion'
+  if grep -Eq '\$\{[^}]+,,\}' "$script_path"; then
+    fail "$name" 'found ${value,,}, which macOS Bash 3.2 cannot parse'
+  else
+    pass "$name"
+  fi
+}
+
 test_standard_mode
 test_jailbreak_idempotency
 test_invalid_input
+test_bash_32_compatibility
 
 if [[ $failures -ne 0 ]]; then
   printf '%s Bash setup test(s) failed.\n' "$failures" >&2
