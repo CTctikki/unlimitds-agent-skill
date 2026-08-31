@@ -39,6 +39,12 @@ Invoke-RepositoryTest 'skill limits novice interaction to key and mode' {
     Assert-RepositoryCondition $skill.Contains('选择模式即表示授权') 'Mode choice must authorize the listed changes'
 }
 
+Invoke-RepositoryTest 'skill directs users without a key to the creation page' {
+    $skill = Get-Content -LiteralPath (Join-Path $repositoryRoot 'unlimitds-setup\SKILL.md') -Raw
+    Assert-RepositoryCondition ($skill -match '没有.{0,20}(API )?Key.{0,100}https://unlimitds\.chat/') 'Skill must provide the API key creation page'
+    Assert-RepositoryCondition ($skill -match 'https://unlimitds\.chat/.{0,100}创建') 'Skill must explain that users can create a key there'
+}
+
 Invoke-RepositoryTest 'skill dispatches deterministic scripts safely' {
     $skill = Get-Content -LiteralPath (Join-Path $repositoryRoot 'unlimitds-setup\SKILL.md') -Raw
     foreach ($required in @('configure.ps1', 'configure.sh', 'standard', 'jailbreak', '重启')) {
@@ -73,6 +79,9 @@ Invoke-RepositoryTest 'novice README provides one-copy installation' {
         Assert-RepositoryCondition $readme.Contains($required) "README is missing: $required"
     }
     Assert-RepositoryCondition ($readme -match '(?s)复制.{0,20}(下面|这段).{0,1000}安装') 'Copy-paste Agent prompt is missing'
+    $copyPrompt = [regex]::Match($readme, '(?s)```text\s*(.*?)\s*```').Groups[1].Value
+    Assert-RepositoryCondition $copyPrompt.Contains('https://unlimitds.chat/') 'Copy-paste prompt must include the API key creation page'
+    Assert-RepositoryCondition ($copyPrompt -match '没有.{0,20}(API )?Key.{0,100}创建') 'Copy-paste prompt must tell users they can create a key'
     Assert-RepositoryCondition ($readme -match 'API Key.{0,40}(密码|密钥)') 'API key safety warning is missing'
     Assert-RepositoryCondition ($readme -match '(非官方|Unofficial)') 'Unofficial-project notice is missing'
 }
