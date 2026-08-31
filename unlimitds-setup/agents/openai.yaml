@@ -1,0 +1,6 @@
+interface:
+  display_name: "UnlimitDS 一键配置"
+  short_description: "为 Codex 和 Claude 配置标准或破甲模式"
+  default_prompt: "Use $unlimitds-setup to configure UnlimitDS for my installed coding agents."
+policy:
+  allow_implicit_invocation: true
