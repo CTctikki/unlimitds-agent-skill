@@ -57,6 +57,49 @@ Invoke-RepositoryTest 'Codex skill metadata is present' {
     Assert-RepositoryCondition ($metadata -match '(?m)^\s*default_prompt:\s*".*\$unlimitds-setup.*"$') 'Default prompt must invoke the skill'
 }
 
+Invoke-RepositoryTest 'novice README provides one-copy installation' {
+    $readmePath = Join-Path $repositoryRoot 'README.md'
+    Assert-RepositoryCondition (Test-Path $readmePath) 'README.md is missing'
+    $readme = Get-Content -LiteralPath $readmePath -Raw
+    foreach ($required in @(
+        'https://github.com/CTctikki/unlimitds-agent-skill/tree/main/unlimitds-setup',
+        '~/.codex/skills/unlimitds-setup',
+        '~/.claude/skills/unlimitds-setup',
+        '标准模式',
+        '破甲模式',
+        '重启',
+        'https://unlimitds.chat'
+    )) {
+        Assert-RepositoryCondition $readme.Contains($required) "README is missing: $required"
+    }
+    Assert-RepositoryCondition ($readme -match '(?s)复制.{0,20}(下面|这段).{0,1000}安装') 'Copy-paste Agent prompt is missing'
+    Assert-RepositoryCondition ($readme -match 'API Key.{0,40}(密码|密钥)') 'API key safety warning is missing'
+    Assert-RepositoryCondition ($readme -match '(非官方|Unofficial)') 'Unofficial-project notice is missing'
+}
+
+Invoke-RepositoryTest 'public repository files are complete' {
+    $licensePath = Join-Path $repositoryRoot 'LICENSE'
+    Assert-RepositoryCondition (Test-Path $licensePath) 'LICENSE is missing'
+    Assert-RepositoryCondition ((Get-Content -LiteralPath $licensePath -Raw).Contains('MIT License')) 'MIT license is missing'
+    $ignore = Get-Content -LiteralPath (Join-Path $repositoryRoot '.gitignore') -Raw
+    foreach ($entry in @('.env', '.unlimitds/', '.worktrees/')) {
+        Assert-RepositoryCondition $ignore.Contains($entry) ".gitignore is missing $entry"
+    }
+}
+
+Invoke-RepositoryTest 'repository contains no likely real UnlimitDS key' {
+    $candidateFiles = Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File | Where-Object {
+        $_.FullName -notmatch '[\\/]\.git([\\/]|$)' -and
+        $_.FullName -notmatch '[\\/]\.worktrees([\\/]|$)'
+    }
+    foreach ($file in $candidateFiles) {
+        $content = Get-Content -LiteralPath $file.FullName -Raw -ErrorAction SilentlyContinue
+        if ($content -match 'uds_(?!test_|YOUR_KEY)[A-Za-z0-9_-]{20,}') {
+            throw "Possible real API key found in $($file.FullName)"
+        }
+    }
+}
+
 if ($failures.Count -gt 0) {
     $failures | ForEach-Object { Write-Error $_ }
     exit 1
