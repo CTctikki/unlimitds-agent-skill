@@ -1,1 +1,8 @@
 .worktrees/
+.env
+.env.*
+.unlimitds/
+tmp/
+*.tmp
+.DS_Store
+Thumbs.db
