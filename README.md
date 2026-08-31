@@ -7,12 +7,13 @@
 ### 1. 复制下面这段话，发给 Codex 或 Claude
 
 ```text
-请从 https://github.com/CTctikki/unlimitds-agent-skill/tree/main/unlimitds-setup 安装 unlimitds-setup Skill。Codex 安装到 ~/.codex/skills/unlimitds-setup，Claude Code 安装到 ~/.claude/skills/unlimitds-setup。安装完成后立即读取 SKILL.md 并照做，只问我 API Key 和“标准模式/破甲模式”，不要让我手动修改配置。如果我没有 API Key，请提醒我可以打开 https://unlimitds.chat/，登录后进入“账户与用量”创建 Key。
+请从 https://github.com/CTctikki/unlimitds-agent-skill/tree/main/unlimitds-setup 安装 unlimitds-setup Skill。Codex 安装到 ~/.codex/skills/unlimitds-setup，Claude Code 安装到 ~/.claude/skills/unlimitds-setup。安装完成后立即读取 SKILL.md 并照做，只问我 API Key 和“标准模式/破甲模式”，不要让我手动修改配置。每次询问 API Key 时，同时告诉我：创建 Key 可打开 https://unlimitds.chat/，购买额度可打开 https://pay.ldxp.cn/shop/AMTT76KG。
 ```
 
 ### 2. 它问 API Key 时，粘贴你的 Key
 
-没有 Key？打开 [UnlimitDS](https://unlimitds.chat/)，登录后进入“账户与用量”创建。
+- 创建 Key：[https://unlimitds.chat/](https://unlimitds.chat/)（登录后进入“账户与用量”）
+- 购买额度：[https://pay.ldxp.cn/shop/AMTT76KG](https://pay.ldxp.cn/shop/AMTT76KG)
 
 ### 3. 选择模式，完成后重启
 

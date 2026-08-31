@@ -8,6 +8,8 @@ param(
 $ErrorActionPreference = 'Stop'
 
 function Get-PlainTextSecret {
+    [Console]::WriteLine('Create API key: https://unlimitds.chat/')
+    [Console]::WriteLine('Buy quota: https://pay.ldxp.cn/shop/AMTT76KG')
     $secureValue = Read-Host 'Enter your UnlimitDS API Key' -AsSecureString
     $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureValue)
     try {

@@ -29,6 +29,8 @@ fi
 if [[ -n "${UNLIMITDS_API_KEY_INPUT:-}" ]]; then
   api_key="${UNLIMITDS_API_KEY_INPUT}"
 else
+  printf 'Create API key: https://unlimitds.chat/\n' >&2
+  printf 'Buy quota: https://pay.ldxp.cn/shop/AMTT76KG\n' >&2
   printf '请输入 UnlimitDS API Key：' >&2
   IFS= read -rs api_key
   printf '\n' >&2

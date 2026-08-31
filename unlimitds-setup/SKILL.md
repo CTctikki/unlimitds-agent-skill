@@ -11,7 +11,9 @@ Configure supported coding agents without asking the user to understand model ID
 
 只收集两个输入：
 
-1. **API Key**：如果当前对话已经提供，不要再次询问，也不要复述。如果用户没有 API Key，告诉他可以打开 `https://unlimitds.chat/`，登录后进入“账户与用量”创建 Key。
+1. **API Key**：如果当前对话已经提供，不要再次询问，也不要复述。每次询问 API Key 时，必须同时显示以下两条信息：
+   - 创建 API Key：`https://unlimitds.chat/`（登录后进入“账户与用量”创建）
+   - 购买额度：`https://pay.ldxp.cn/shop/AMTT76KG`
 2. **模式**：
    - `标准模式`（推荐）→ `standard`
    - `破甲模式` → `jailbreak`

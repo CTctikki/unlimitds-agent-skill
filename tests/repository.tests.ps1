@@ -39,10 +39,17 @@ Invoke-RepositoryTest 'skill limits novice interaction to key and mode' {
     Assert-RepositoryCondition $skill.Contains('选择模式即表示授权') 'Mode choice must authorize the listed changes'
 }
 
-Invoke-RepositoryTest 'skill directs users without a key to the creation page' {
+Invoke-RepositoryTest 'every API key prompt includes creation and quota links' {
     $skill = Get-Content -LiteralPath (Join-Path $repositoryRoot 'unlimitds-setup\SKILL.md') -Raw
-    Assert-RepositoryCondition ($skill -match '没有.{0,20}(API )?Key.{0,100}https://unlimitds\.chat/') 'Skill must provide the API key creation page'
-    Assert-RepositoryCondition ($skill -match 'https://unlimitds\.chat/.{0,100}创建') 'Skill must explain that users can create a key there'
+    Assert-RepositoryCondition ($skill -match '每次.{0,30}(询问|请求).{0,20}API Key') 'Skill must require links on every API key prompt'
+    Assert-RepositoryCondition $skill.Contains('https://unlimitds.chat/') 'Skill must provide the API key creation page'
+    Assert-RepositoryCondition $skill.Contains('https://pay.ldxp.cn/shop/AMTT76KG') 'Skill must provide the quota purchase page'
+
+    foreach ($scriptRelativePath in @('unlimitds-setup\scripts\configure.ps1', 'unlimitds-setup\scripts\configure.sh')) {
+        $script = Get-Content -LiteralPath (Join-Path $repositoryRoot $scriptRelativePath) -Raw
+        Assert-RepositoryCondition $script.Contains('https://unlimitds.chat/') "$scriptRelativePath is missing the API key creation page"
+        Assert-RepositoryCondition $script.Contains('https://pay.ldxp.cn/shop/AMTT76KG') "$scriptRelativePath is missing the quota purchase page"
+    }
 }
 
 Invoke-RepositoryTest 'skill dispatches deterministic scripts safely' {
@@ -81,7 +88,8 @@ Invoke-RepositoryTest 'novice README provides one-copy installation' {
     Assert-RepositoryCondition ($readme -match '(?s)复制.{0,20}(下面|这段).{0,1000}安装') 'Copy-paste Agent prompt is missing'
     $copyPrompt = [regex]::Match($readme, '(?s)```text\s*(.*?)\s*```').Groups[1].Value
     Assert-RepositoryCondition $copyPrompt.Contains('https://unlimitds.chat/') 'Copy-paste prompt must include the API key creation page'
-    Assert-RepositoryCondition ($copyPrompt -match '没有.{0,20}(API )?Key.{0,100}创建') 'Copy-paste prompt must tell users they can create a key'
+    Assert-RepositoryCondition $copyPrompt.Contains('https://pay.ldxp.cn/shop/AMTT76KG') 'Copy-paste prompt must include the quota purchase page'
+    Assert-RepositoryCondition ($copyPrompt -match '每次.{0,30}(询问|请求).{0,20}API Key') 'Copy-paste prompt must require links on every API key prompt'
     Assert-RepositoryCondition ($readme -match 'API Key.{0,40}(密码|密钥)') 'API key safety warning is missing'
     Assert-RepositoryCondition ($readme -match '(非官方|Unofficial)') 'Unofficial-project notice is missing'
 }
